@@ -62,7 +62,7 @@ const inputLoginPin = document.querySelector('.login__input--pin');
 const inputTransferTo = document.querySelector('.form__input--to');
 const inputTransferAmount = document.querySelector('.form__input--amount');
 const inputLoanAmount = document.querySelector('.form__input--loan-amount');
-const inputCloseUsername = document.querySelector('.form__input--user');
+const inputCloseNickname = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 
@@ -147,7 +147,7 @@ btnLogin.addEventListener("click", function (e) {
     inputLoginPin.value = ''
     inputLoginPin.blur()
     updateUi(currentAccount)
-    
+
   }
 })
 
@@ -159,11 +159,36 @@ btnTransfer.addEventListener("click", function (e) {
 
   inputTransferAmount.value = ''
   inputTransferTo.value = ''
-  
+
   if (recipientAccount && transferAmount > 0 && currentAccount.balance >= transferAmount && currentAccount.nickName !== recipientAccount.nickName) {
     currentAccount.transactions.push(-transferAmount)
     recipientAccount.transactions.push(transferAmount)
 
     updateUi(currentAccount)
   }
+})
+
+
+
+btnClose.addEventListener("click", function (e) {
+  e.preventDefault()
+  if (inputCloseNickname.value === currentAccount.nickName && Number(inputClosePin.value) === currentAccount.pin) {
+    const currentAccountIndex = accounts.findIndex(account => account.nickName === currentAccount.nickName)
+    accounts.splice(currentAccountIndex, 1)
+    containerApp.style.opacity = 0
+    labelWelcome.textContent = 'Войдите в свой аккаунт'
+  }
+  inputCloseNickname.value = ''
+  inputClosePin.value = ''
+})
+
+
+btnLoan.addEventListener("click", function (e) {
+  e.preventDefault()
+  const loanAmount = Number(inputLoanAmount.value)
+  if (loanAmount > 0 && currentAccount.transactions.some(trans => trans >= loanAmount / 10)) {
+    currentAccount.transactions.push(loanAmount)
+    updateUi(currentAccount)
+  }
+  inputLoanAmount.value = ''
 })
