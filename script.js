@@ -75,10 +75,27 @@ function displayTransactions(transactions) {
       <div class="transactions__type transactions__type--${transtype}">
         ${index + 1} ${transtype}
       </div>
-      <div class="transactions__value">${trans}</div>
+      <div class="transactions__value">${Math.abs(trans)}</div>
     </div>
     `
     containerTransactions.insertAdjacentHTML("afterbegin", transactionRow)
   });
 }
 displayTransactions(account1.transactions)
+
+function createNickNames(accs) {
+  accs.forEach((acc) => {
+    acc.nickName = acc.userName
+      .toLowerCase()
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+  })
+}
+createNickNames(accounts)
+
+function displayBalance(transactions) {
+  const balance = transactions.reduce((acc, item) => acc + item, 0)
+  labelBalance.textContent = `${balance}$`
+}
+displayBalance(account1.transactions)
