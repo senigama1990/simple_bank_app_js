@@ -66,6 +66,7 @@ const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
 
+
 function displayTransactions(transactions) {
   containerTransactions.innerHTML = ''
   transactions.forEach((trans, index) => {
@@ -81,7 +82,8 @@ function displayTransactions(transactions) {
     containerTransactions.insertAdjacentHTML("afterbegin", transactionRow)
   });
 }
-displayTransactions(account1.transactions)
+
+
 
 function createNickNames(accs) {
   accs.forEach((acc) => {
@@ -94,8 +96,53 @@ function createNickNames(accs) {
 }
 createNickNames(accounts)
 
+
+
 function displayBalance(transactions) {
   const balance = transactions.reduce((acc, item) => acc + item, 0)
   labelBalance.textContent = `${balance}$`
 }
-displayBalance(account1.transactions)
+
+
+
+
+
+function displayTotal(account) {
+  const transactionsTotal = account.transactions.filter(trans => trans > 0).reduce((acc, trans) => acc + trans, 0)
+  labelSumIn.textContent = `${transactionsTotal}$`
+
+  const withdrawalTotal = account.transactions.filter(trans => trans < 0).reduce((acc, trans) => acc + trans, 0)
+  labelSumOut.textContent = `${withdrawalTotal}$`
+
+  const intersetTotal = account.transactions
+    .filter(trans => trans > 0)
+    .map(depos => (depos * account.interest) / 100)
+    .filter((interes) => {
+      return interes >= 5
+    }).reduce((acc, interest) => acc + interest, 0)
+  labelSumInterest.textContent = `${intersetTotal}$`
+}
+
+
+let currentAccount
+
+
+btnLogin.addEventListener("click", function (e) {
+  e.preventDefault()
+  currentAccount = accounts.find(account => account.nickName === inputLoginUsername.value)
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    containerApp.style.opacity = 1
+    labelWelcome.textContent = `Рады, что вы снова с нами, ${currentAccount.userName.split(' ')[0]}`
+
+    inputLoginUsername.value = ''
+    inputLoginPin.value = ''
+    inputLoginPin.blur()
+
+    displayTransactions(currentAccount.transactions)
+
+    displayBalance(currentAccount.transactions)
+
+    displayTotal(currentAccount)
+
+  }
+})
