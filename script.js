@@ -67,9 +67,10 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 
 
-function displayTransactions(transactions) {
+function displayTransactions(transactions, sort = false) {
   containerTransactions.innerHTML = ''
-  transactions.forEach((trans, index) => {
+  const transacs = sort ? transactions.slice().sort((x, y) => x - y) : transactions
+  transacs.forEach((trans, index) => {
     let transtype = trans > 0 ? "deposit" : "withdrawal"
     const transactionRow = `
     <div class="transactions__row">
@@ -191,4 +192,12 @@ btnLoan.addEventListener("click", function (e) {
     updateUi(currentAccount)
   }
   inputLoanAmount.value = ''
+})
+
+
+let transactionsSorted = false
+btnSort.addEventListener("click", function (e) {
+  e.preventDefault()
+  displayTransactions(currentAccount.transactions, !transactionsSorted)
+  transactionsSorted = !transactionsSorted
 })
