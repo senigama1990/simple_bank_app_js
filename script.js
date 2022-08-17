@@ -87,8 +87,8 @@ const account5 = {
     '2021-01-22T12:17:46.255Z',
     '2021-02-12T15:14:06.486Z',
   ],
-  currency: 'USD',
-  locale: 'en-US',
+  currency: 'UZS',
+  locale: 'uz-UZ',
 };
 
 const accounts = [account1, account2, account3, account4, account5];
@@ -121,23 +121,31 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 
 
-function formatTransactionDate(date) {
+function formatTransactionDate(date, locale) {
 
   const getDateBetween2Dates = (date1, date2) => {
     return Math.round(Math.abs((date2 - date1) / (1000 * 60 * 60 * 24)))
   }
   const daysPassed = getDateBetween2Dates(new Date(), date)
 
-  if(daysPassed === 0) return "Сегодня"
-  if(daysPassed === 1) return "Вчера"
+  if (daysPassed === 0) return "Сегодня"
+  if (daysPassed === 1) return "Вчера"
   if (daysPassed <= 7) return `${daysPassed} дней назад`
-  
+
   else {
-    const day = `${date.getDate()}`.padStart(2, "0")
-    const month = `${date.getMonth() + 1}`.padStart(2, "0")
-    const year = date.getFullYear()
-    return `${day}/${month}/${year}`
+    // const day = `${date.getDate()}`.padStart(2, "0")
+    // const month = `${date.getMonth() + 1}`.padStart(2, "0")
+    // const year = date.getFullYear()
+    // return `${day}/${month}/${year}`
+    return new Intl.DateTimeFormat(locale).format(date)
   }
+}
+
+function formatCurrency(value, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency
+  }).format(value)
 }
 
 function displayTransactions(account, sort = false) {
@@ -148,7 +156,9 @@ function displayTransactions(account, sort = false) {
 
     const date = new Date(account.transactionsDates[index])
 
-    const transDate = formatTransactionDate(date)
+    const transDate = formatTransactionDate(date, account.locale)
+
+    const formattedTrans = formatCurrency(trans, account.locale, account.currency)
 
     const transactionRow = `
     <div class="transactions__row">
@@ -156,7 +166,7 @@ function displayTransactions(account, sort = false) {
         ${index + 1} ${transtype}
       </div>
       <div class="transactions__date">${transDate}</div>
-      <div class="transactions__value">${trans.toFixed(2)}</div>
+      <div class="transactions__value">${formattedTrans}</div>
     </div>
     `
     containerTransactions.insertAdjacentHTML("afterbegin", transactionRow)
@@ -181,7 +191,7 @@ createNickNames(accounts)
 function displayBalance(account) {
   const balance = account.transactions.reduce((acc, item) => acc + item, 0)
   account.balance = balance
-  labelBalance.textContent = `${balance.toFixed(2)}$`
+  labelBalance.textContent = formatCurrency(balance, account.locale, account.currency)
 }
 
 
@@ -190,10 +200,10 @@ function displayBalance(account) {
 
 function displayTotal(account) {
   const transactionsTotal = account.transactions.filter(trans => trans > 0).reduce((acc, trans) => acc + trans, 0)
-  labelSumIn.textContent = `${transactionsTotal.toFixed(2)}$`
+  labelSumIn.textContent = formatCurrency(transactionsTotal, account.locale, account.currency)
 
   const withdrawalTotal = account.transactions.filter(trans => trans < 0).reduce((acc, trans) => acc + trans, 0)
-  labelSumOut.textContent = `${withdrawalTotal.toFixed(2)}$`
+  labelSumOut.textContent = formatCurrency(withdrawalTotal, account.locale, account.currency)
 
   const intersetTotal = account.transactions
     .filter(trans => trans > 0)
@@ -201,7 +211,7 @@ function displayTotal(account) {
     .filter((interes) => {
       return interes >= 5
     }).reduce((acc, interest) => acc + interest, 0)
-  labelSumInterest.textContent = `${intersetTotal.toFixed(2)}$`
+  labelSumInterest.textContent = formatCurrency(intersetTotal, account.locale, account.currency)
 }
 
 function updateUi(account) {
@@ -219,7 +229,31 @@ let currentAccount
 // currentAccount = account2
 // updateUi(currentAccount)
 // containerApp.style.opacity = 1
+// labelDate.textContent = `Ha ${day}/${month}/${year}`
+// const now = new Date()
+// const options = {
+//   hour: '2-digit',
+//   minute: '2-digit',
+//   day: '2-digit',
+//   month: '2-digit',
+//   year: 'numeric',
+//   weekday: 'long',
+// }
+// const locale = navigator.language
+// labelDate.textContent = `Ha ${new Intl.DateTimeFormat(locale, options).format(now)}`
 
+
+function startLogOutTimer() {
+  let time = 300
+  setInterval(function () {
+    const minutes = time / 60
+    const seconds = time % 60
+    labelTimer.textContent = time
+    time--
+
+  }, 1000)
+
+}
 
 
 btnLogin.addEventListener("click", function (e) {
@@ -229,16 +263,29 @@ btnLogin.addEventListener("click", function (e) {
     containerApp.style.opacity = 1
     labelWelcome.textContent = `Рады, что вы снова с нами, ${currentAccount.userName.split(' ')[0]}`
 
-    const now = new Date()
-    const day = `${now.getDate()}`.padStart(2, "0")
-    const month = `${now.getMonth() + 1}`.padStart(2, "0")
-    const year = now.getFullYear()
+    // const now = new Date()
+    // const day = `${now.getDate()}`.padStart(2, "0")
+    // const month = `${now.getMonth() + 1}`.padStart(2, "0")
+    // const year = now.getFullYear()
 
-    labelDate.textContent = `Ha ${day}/${month}/${year}`
+    const now = new Date()
+    const options = {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      weekday: 'long',
+    }
+    // const locale = navigator.language
+    labelDate.textContent = `Ha ${new Intl.DateTimeFormat(currentAccount.locale, options).format(now)}`
+
 
     inputLoginUsername.value = ''
     inputLoginPin.value = ''
     inputLoginPin.blur()
+
+    startLogOutTimer()
     updateUi(currentAccount)
 
   }
@@ -283,10 +330,12 @@ btnLoan.addEventListener("click", function (e) {
   e.preventDefault()
   const loanAmount = Math.floor(inputLoanAmount.value)
   if (loanAmount > 0 && currentAccount.transactions.some(trans => trans >= loanAmount / 10)) {
-    currentAccount.transactions.push(loanAmount)
-    currentAccount.transactionsDates.push(new Date().toISOString())
+    setTimeout(function () {
+      currentAccount.transactions.push(loanAmount)
+      currentAccount.transactionsDates.push(new Date().toISOString())
 
-    updateUi(currentAccount)
+      updateUi(currentAccount)
+    }, 3000)
   }
   inputLoanAmount.value = ''
 })
@@ -309,3 +358,5 @@ logoImg.addEventListener("click", function () {
     }
   })
 })
+
+
