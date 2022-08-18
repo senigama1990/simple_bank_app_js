@@ -223,7 +223,7 @@ function updateUi(account) {
 }
 
 
-let currentAccount
+let currentAccount, currentLogOutTimer
 
 
 // currentAccount = account2
@@ -245,13 +245,23 @@ let currentAccount
 
 function startLogOutTimer() {
   let time = 300
-  setInterval(function () {
-    const minutes = time / 60
-    const seconds = time % 60
-    labelTimer.textContent = time
+
+  function logOuttimerCallback() {
+    
+    const minutes = String(Math.trunc(time / 60)).padStart(2, "0")
+    const seconds = String(time % 60).padStart(2, "0")
+    labelTimer.textContent = `${minutes}:${seconds}`
+    if (time === 0) {
+      clearInterval(logOutTimer)
+      containerApp.style.opacity = 0
+      labelWelcome.textContent = `Войдите в свой аккаунт`
+    }
     time--
 
-  }, 1000)
+  }
+  logOuttimerCallback()
+  const logOutTimer = setInterval(logOuttimerCallback, 1000)
+  return logOutTimer
 
 }
 
@@ -285,7 +295,8 @@ btnLogin.addEventListener("click", function (e) {
     inputLoginPin.value = ''
     inputLoginPin.blur()
 
-    startLogOutTimer()
+    if(currentLogOutTimer) clearInterval(currentLogOutTimer)
+    currentLogOutTimer = startLogOutTimer()
     updateUi(currentAccount)
 
   }
@@ -308,6 +319,9 @@ btnTransfer.addEventListener("click", function (e) {
     recipientAccount.transactionsDates.push(new Date().toISOString())
 
     updateUi(currentAccount)
+
+    clearInterval(currentLogOutTimer)
+    currentLogOutTimer = startLogOutTimer()
   }
 })
 
@@ -335,9 +349,14 @@ btnLoan.addEventListener("click", function (e) {
       currentAccount.transactionsDates.push(new Date().toISOString())
 
       updateUi(currentAccount)
+
+      
     }, 3000)
   }
   inputLoanAmount.value = ''
+
+  clearInterval(currentLogOutTimer)
+  currentLogOutTimer = startLogOutTimer()
 })
 
 
